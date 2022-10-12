@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
@@ -28,6 +29,10 @@ module.exports = {
         use: 'file-loader',
       },
     ],
+  },
+  entry: './src/index.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
     new HtmlWebpackPlugin({
