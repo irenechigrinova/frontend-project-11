@@ -1,9 +1,40 @@
 <!doctype html>
 <html>
   <head>
-    <title>Webpack Package</title>
+    <title>RSS Aggregator</title>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="min-vh-100">
+    <main>
+      <section class="container-fluid bg-dark p-5">
+        <div class="row">
+          <div class="col-md-10 col-lg-8 col-sm-12 mx-auto text-white">
+            <h1 class="display-3 mb-0">RSS агрегатор</h1>
+            <p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
+            <form class="text-body" id="rss-form">
+              <div class="row">
+                <div class="col">
+                  <div class="form-floating">
+                    <input
+                      id="rss-input"
+                      autofocus
+                      type="text"
+                      required
+                      name="rss-url"
+                      aria-label="rss url"
+                      class="form-control w-100"
+                      placeholder="ссылка RSS"
+                      autocomplete="off">
+                    <label for="rss-input">Ссылка RSS</label>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <button type="submit" aria-label="add rss" class="h-100 btn btn-lg btn-primary px-sm-5">Добавить</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
