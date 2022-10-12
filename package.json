@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "RSS Aggregator",
   "scripts": {
-    "dev": "npx webpack serve"
+    "dev": "npx webpack serve",
+    "build": "cross-env NODE_ENV=production webpack --mode production"
   },
   "repository": {
     "type": "git",
