@@ -28,6 +28,7 @@ export default (feeds, onLoadFeed) => {
     validateUrl(data.get('rss-url'))
       .then(() => {
         onLoadFeed(data.get('rss-url'));
+        formState.success = 'Success';
       })
       .catch((err) => {
         formState.rssUrlError = err.message;

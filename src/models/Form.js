@@ -15,17 +15,26 @@ export default class Form {
     this.element.removeEventListener(action, callback);
   }
 
-  setResult(message, type, field) {
+  setResult(message, type, field = null) {
     this.resultElement.innerHTML = message;
     if (type === 'error' && message.length) {
       this.resultElement.classList.remove('text-success');
       this.resultElement.classList.add('text-danger');
-      this.element.querySelector(`#${field}`).classList.add('is-invalid');
+      if (field) {
+        this.element.querySelector(`#${field}`).classList.add('is-invalid');
+      }
     } else if (type === 'success' || !message.length) {
       this.resultElement.classList.add('text-success');
       this.resultElement.classList.remove('text-danger');
-      this.element.querySelector(`#${field}`).classList.remove('is-invalid');
+      if (field) {
+        this.element.querySelector(`#${field}`).classList.remove('is-invalid');
+      }
     }
+  }
+
+  resetForm() {
+    this.element.reset();
+    this.element.querySelector('input').focus();
   }
 
   init(state) {
@@ -33,6 +42,10 @@ export default class Form {
       switch (true) {
         case path.includes('Error'):
           this.setResult(value, 'error', toInputField(path.replace(/Error/g, '')));
+          break;
+        case path === 'success':
+          this.resetForm();
+          this.setResult(value, 'success');
           break;
         default:
           break;
