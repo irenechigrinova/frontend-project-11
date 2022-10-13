@@ -15,7 +15,7 @@
                 <div class="col">
                   <div class="form-floating">
                     <input
-                      id="rss-input"
+                      id="rss-url"
                       autofocus
                       type="text"
                       required
@@ -24,7 +24,7 @@
                       class="form-control w-100"
                       placeholder="ссылка RSS"
                       autocomplete="off">
-                    <label for="rss-input">Ссылка RSS</label>
+                    <label for="rss-url">Ссылка RSS</label>
                   </div>
                 </div>
                 <div class="col-auto">
@@ -32,6 +32,8 @@
                 </div>
               </div>
             </form>
+            <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
+            <p class="m-0 position-absolute small" id="form-result"></p>
           </div>
         </div>
       </section>

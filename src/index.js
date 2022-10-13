@@ -1,5 +1,11 @@
 import 'bootstrap';
 
+import initForm from './controllers/form';
+
 import './app.scss';
 
-console.log('aa');
+const feeds = [];
+
+const handleFeedLoad = (url) => feeds.push(url);
+
+initForm(feeds, handleFeedLoad);
