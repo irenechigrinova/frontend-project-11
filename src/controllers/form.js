@@ -1,8 +1,13 @@
 import onChange from 'on-change';
 import * as yup from 'yup';
+
+import yupLocale from '../locales/yup';
+
 import Form from '../models/Form';
 
-export default (feeds, onLoadFeed) => {
+export default (feeds, onLoadFeed, i18n) => {
+  yup.setLocale(yupLocale);
+
   const initialFormState = {
     isFetching: false,
     rssUrlError: '',
@@ -28,10 +33,10 @@ export default (feeds, onLoadFeed) => {
     validateUrl(data.get('rss-url'))
       .then(() => {
         onLoadFeed(data.get('rss-url'));
-        formState.success = 'Success';
+        formState.success = i18n.t('success');
       })
       .catch((err) => {
-        formState.rssUrlError = err.message;
+        formState.rssUrlError = i18n.t(err.errors[0].key);
       })
       .finally(() => {
         formState.isFetching = false;

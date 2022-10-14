@@ -1,11 +1,24 @@
 import 'bootstrap';
+import i18next from 'i18next';
+
+import ru from './locales/ru';
 
 import initForm from './controllers/form';
 
 import './app.scss';
 
-const feeds = [];
+const i18n = i18next.createInstance();
 
-const handleFeedLoad = (url) => feeds.push(url);
+i18n.init({
+  lng: 'ru',
+  debug: true,
+  resources: {
+    ru,
+  },
+}).then(() => {
+  const feeds = [];
 
-initForm(feeds, handleFeedLoad);
+  const handleFeedLoad = (url) => feeds.push(url);
+
+  initForm(feeds, handleFeedLoad, i18n);
+});
