@@ -1,3 +1,8 @@
+import axios from 'axios';
+
+export const FEED_PROXY = 'https://allorigins.hexlet.app/get?disableCache=true&url=';
+export const FEED_TIMEOUT = 5000;
+
 export const toInputField = (str) => str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 
 export const parseRssData = (data, i18n) => {
@@ -17,8 +22,6 @@ export const parseRssData = (data, i18n) => {
 
   return { title, desc, items };
 };
-
-export const FEED_PROXY = 'https://allorigins.hexlet.app/get?disableCache=true&url=';
 
 export const createBaseContent = (id, text) => {
   const container = document.querySelector(`#${id}`);
@@ -41,3 +44,23 @@ export const createBaseContent = (id, text) => {
 
   return ul;
 };
+
+export const parseRssResult = (data, i18n) => {
+  if (!!data.status.http_code && data.status.http_code !== 200) {
+    throw new Error(i18n.t('invalidRss'));
+  }
+
+  return parseRssData(data.contents, i18n);
+};
+
+export const getFeed = (url, i18n) => new Promise((resolve, reject) => {
+  axios.get(`${FEED_PROXY}${url}`)
+    .then((response) => {
+      const result = parseRssResult(response.data, i18n);
+      resolve(result);
+    })
+    .catch((err) => {
+      const errText = err.name && err.name === 'AxiosError' ? i18n.t('networkErr') : err.message;
+      reject(errText);
+    });
+});

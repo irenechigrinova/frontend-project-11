@@ -8,5 +8,6 @@ export default {
     feeds: 'Фиды',
     posts: 'Посты',
     watch: 'Просмотр',
+    networkErr: 'Ошибка сети',
   },
 };
