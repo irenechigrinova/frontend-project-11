@@ -25,13 +25,14 @@ i18n.init({
   const postsData = {};
 
   const handleFeedLoad = (url, data, shouldUpdateFeed = true) => {
-    feedUrls = [url, ...feedUrls];
+    if (shouldUpdateFeed) feedUrls = [url, ...feedUrls];
+
     feedsData[url] = data;
     data.items.forEach((item) => {
-      postsData[item.link] = item;
+      if (!postsData[item.link]) postsData[item.link] = { ...item, isRead: false };
     });
 
-    renderPosts(feedUrls, feedsData, i18n);
+    renderPosts(feedUrls, feedsData, postsData, i18n);
     if (shouldUpdateFeed) renderFeeds(feedUrls, feedsData, i18n);
 
     // eslint-disable-next-line no-use-before-define
@@ -53,4 +54,26 @@ i18n.init({
   }
 
   initForm(feedUrls, handleFeedLoad, i18n);
+
+  const modal = document.getElementById('modal');
+  modal.addEventListener('show.bs.modal', (event) => {
+    const button = event.relatedTarget;
+    const itemId = button.getAttribute('data-bs-item');
+    postsData[itemId].isRead = true;
+
+    const { title, desc } = postsData[itemId];
+    const modalTitle = modal.querySelector('.modal-title');
+    const modalDesc = modal.querySelector('.modal-body');
+    const read = modal.querySelector('.modal-footer a');
+    const close = modal.querySelector('.modal-footer button');
+    const link = document.querySelector(`[data-id="${itemId}"]`);
+
+    modalTitle.textContent = title;
+    modalDesc.textContent = desc;
+    read.href = itemId;
+    read.textContent = i18n.t('read');
+    close.textContent = i18n.t('close');
+    link.classList.add('fw-normal');
+    link.classList.remove('fw-bold');
+  });
 });

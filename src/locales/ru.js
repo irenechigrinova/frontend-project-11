@@ -9,5 +9,7 @@ export default {
     posts: 'Посты',
     watch: 'Просмотр',
     networkErr: 'Ошибка сети',
+    read: 'Читать полностью',
+    close: 'Закрыть',
   },
 };

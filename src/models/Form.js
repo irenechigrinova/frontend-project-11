@@ -37,6 +37,14 @@ export default class Form {
     this.element.querySelector('input').focus();
   }
 
+  toggleButton(value) {
+    if (value) {
+      this.element.querySelector('button').setAttribute('disabled', true);
+    } else {
+      this.element.querySelector('button').removeAttribute('disabled');
+    }
+  }
+
   init(state) {
     return this.onChange(state, (path, value) => {
       switch (true) {
@@ -46,6 +54,9 @@ export default class Form {
         case path === 'success' && value.length > 0:
           this.resetForm();
           this.setResult(value, 'success');
+          break;
+        case path === 'isFetching':
+          this.toggleButton(value);
           break;
         default:
           break;

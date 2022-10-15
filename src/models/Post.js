@@ -7,10 +7,11 @@ export default class Post {
   createLink() {
     const a = document.createElement('a');
     a.href = this.data.link;
-    a.className = 'fw-bold';
+    a.className = this.data.isRead ? 'fw-normal' : 'fw-bold';
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
     a.textContent = this.data.title;
+    a.dataset.id = this.data.link;
 
     return a;
   }
@@ -20,6 +21,9 @@ export default class Post {
     button.type = 'button';
     button.className = 'btn btn-outline-primary btn-sm';
     button.textContent = this.btnText;
+    button.dataset.bsToggle = 'modal';
+    button.dataset.bsTarget = '#modal';
+    button.dataset.bsItem = this.data.link;
 
     return button;
   }

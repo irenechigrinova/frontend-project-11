@@ -42,12 +42,13 @@ export default (feeds, onLoadFeed, i18n) => {
           })
           .catch((err) => {
             formState.rssUrlError = err;
+          })
+          .finally(() => {
+            formState.isFetching = false;
           });
       })
       .catch((err) => {
         formState.rssUrlError = i18n.t(err.errors[0].key);
-      })
-      .finally(() => {
         formState.isFetching = false;
       });
   };
