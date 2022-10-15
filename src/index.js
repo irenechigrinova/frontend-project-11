@@ -4,6 +4,8 @@ import i18next from 'i18next';
 import ru from './locales/ru';
 
 import initForm from './controllers/form';
+import renderFeeds from './controllers/feeds';
+import renderPosts from './controllers/posts';
 
 import './app.scss';
 
@@ -16,9 +18,16 @@ i18n.init({
     ru,
   },
 }).then(() => {
-  const feeds = [];
+  let feedUrls = [];
+  const feedsData = {};
 
-  const handleFeedLoad = (url) => feeds.push(url);
+  const handleFeedLoad = (url, data) => {
+    feedUrls = [url, ...feedUrls];
+    feedsData[url] = data;
 
-  initForm(feeds, handleFeedLoad, i18n);
+    renderFeeds(feedUrls, feedsData, i18n);
+    renderPosts(feedUrls, feedsData, i18n);
+  };
+
+  initForm(feedUrls, handleFeedLoad, i18n);
 });

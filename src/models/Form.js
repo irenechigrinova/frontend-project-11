@@ -43,7 +43,7 @@ export default class Form {
         case path.includes('Error'):
           this.setResult(value, 'error', toInputField(path.replace(/Error/g, '')));
           break;
-        case path === 'success':
+        case path === 'success' && value.length > 0:
           this.resetForm();
           this.setResult(value, 'success');
           break;
