@@ -64,3 +64,12 @@ export const getFeed = (url, i18n) => new Promise((resolve, reject) => {
       reject(errText);
     });
 });
+
+export const createElement = (el, attributes, text = null) => {
+  const element = document.createElement(el);
+  attributes.forEach(({ name, value }) => {
+    element.setAttribute(name, value);
+  });
+  if (text) element.textContent = text;
+  return element;
+};
