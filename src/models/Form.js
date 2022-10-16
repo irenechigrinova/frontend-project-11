@@ -1,9 +1,10 @@
+import onChange from 'on-change';
+
 import { toInputField } from '../utils';
 
 export default class Form {
-  constructor(element, resultElement, onChange) {
+  constructor(element, resultElement) {
     this.element = element;
-    this.onChange = onChange;
     this.resultElement = resultElement;
   }
 
@@ -40,14 +41,14 @@ export default class Form {
 
   toggleButton(value) {
     if (value) {
-      this.element.querySelector('button').setAttribute('disabled', true);
+      this.element.querySelector('button').setAttribute('disabled', 'true');
     } else {
       this.element.querySelector('button').removeAttribute('disabled');
     }
   }
 
   init(state) {
-    return this.onChange(state, (path, value) => {
+    return onChange(state, (path, value) => {
       switch (true) {
         case path.includes('Error'):
           this.setResult(value, 'error', toInputField(path.replace(/Error/g, '')));

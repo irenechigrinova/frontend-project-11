@@ -20,9 +20,9 @@ export default class Post {
     return createElement('button', [
       { name: 'type', value: 'button' },
       { name: 'class', value: 'btn btn-outline-primary btn-sm' },
-      { name: 'bs-toggle', value: 'modal' },
-      { name: 'bs-target', value: '#modal' },
-      { name: 'bs-item', value: this.data.link },
+      { name: 'data-bs-toggle', value: 'modal' },
+      { name: 'data-bs-target', value: '#modal' },
+      { name: 'data-bs-item', value: this.data.link },
     ], this.btnText);
   }
 

@@ -1,5 +1,6 @@
 import 'bootstrap';
 import i18next from 'i18next';
+import onChange from 'on-change';
 
 import ru from './locales/ru';
 
@@ -20,31 +21,46 @@ i18n.init({
     ru,
   },
 }).then(() => {
-  let feedUrls = [];
+  const feedUrls = [];
   const feedsData = {};
   const postsData = {};
+  let formState = {};
 
-  const handleFeedLoad = (url, data, shouldUpdateFeed = true) => {
-    if (shouldUpdateFeed) feedUrls = [url, ...feedUrls];
+  const watchedFeeds = onChange(feedUrls, (_, value) => {
+    const addedUrl = value[value.length - 1];
+    getFeed(addedUrl, i18n)
+      .then((result) => {
+        handleFeedLoad(addedUrl, result);
+        formState.success = i18n.t('success');
+      })
+      .catch((err) => {
+        formState.rssUrlError = err;
+      })
+      .finally(() => {
+        formState.isFetching = false;
+      });
+  });
 
+  function handleFeedLoad(url, data) {
     feedsData[url] = data;
     data.items.forEach((item) => {
       if (!postsData[item.link]) postsData[item.link] = { ...item, isRead: false };
     });
 
-    renderPosts(feedUrls, feedsData, postsData, i18n);
-    if (shouldUpdateFeed) renderFeeds(feedUrls, feedsData, i18n);
+    const reversedFeeds = [...watchedFeeds].reverse();
 
-    // eslint-disable-next-line no-use-before-define
+    renderPosts(reversedFeeds, feedsData, postsData, i18n);
+    renderFeeds(reversedFeeds, feedsData, i18n);
+
     updateFeed(url);
-  };
+  }
 
   function updateFeed(url) {
     setTimeout(() => {
       getFeed(url, i18n)
         .then((result) => {
           const newItems = result.items.filter((item) => !postsData[item.link]);
-          handleFeedLoad(url, { ...result, items: [...newItems, ...result.items] }, false);
+          handleFeedLoad(url, { ...result, items: [...newItems, ...result.items] });
         })
         .catch((err) => {
           console.error(err);
@@ -52,8 +68,6 @@ i18n.init({
         });
     }, FEED_TIMEOUT);
   }
-
-  initForm(feedUrls, handleFeedLoad, i18n);
 
   const modal = document.getElementById('modal');
   modal.addEventListener('show.bs.modal', (event) => {
@@ -76,4 +90,6 @@ i18n.init({
     link.classList.add('fw-normal');
     link.classList.remove('fw-bold');
   });
+
+  formState = initForm(watchedFeeds, i18n);
 });

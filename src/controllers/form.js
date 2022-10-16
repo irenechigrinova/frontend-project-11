@@ -1,12 +1,10 @@
-import onChange from 'on-change';
 import * as yup from 'yup';
 
 import yupLocale from '../locales/yup';
-import { getFeed } from '../utils';
 
 import Form from '../models/Form';
 
-export default (feeds, onLoadFeed, i18n) => {
+export default (feeds, i18n) => {
   yup.setLocale(yupLocale);
 
   const initialFormState = {
@@ -17,7 +15,7 @@ export default (feeds, onLoadFeed, i18n) => {
   const formElement = document.getElementById('rss-form');
   const formResultElement = document.getElementById('form-result');
 
-  const currentForm = new Form(formElement, formResultElement, onChange);
+  const currentForm = new Form(formElement, formResultElement);
   const formState = currentForm.init(initialFormState);
 
   const validateUrl = (url) => {
@@ -34,19 +32,7 @@ export default (feeds, onLoadFeed, i18n) => {
     const data = new FormData(e.target);
     const url = data.get('rss-url');
     validateUrl(url)
-      .then(() => {
-        getFeed(url, i18n)
-          .then((result) => {
-            onLoadFeed(url, result);
-            formState.success = i18n.t('success');
-          })
-          .catch((err) => {
-            formState.rssUrlError = err;
-          })
-          .finally(() => {
-            formState.isFetching = false;
-          });
-      })
+      .then(() => feeds.push(url))
       .catch((err) => {
         formState.rssUrlError = i18n.t(err.errors[0].key);
         formState.isFetching = false;
@@ -54,5 +40,5 @@ export default (feeds, onLoadFeed, i18n) => {
   };
   currentForm.subscribe('submit', handleFormSubmit);
 
-  return { formState };
+  return formState;
 };
