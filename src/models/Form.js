@@ -15,20 +15,21 @@ export default class Form {
     this.element.removeEventListener(action, callback);
   }
 
+  setResultClasses(addClass, removeClass, field, fieldIsValid) {
+    this.resultElement.classList.remove(removeClass);
+    this.resultElement.classList.add(addClass);
+    if (field) {
+      const method = fieldIsValid ? 'remove' : 'add';
+      this.element.querySelector(`#${field}`).classList[method]('is-invalid');
+    }
+  }
+
   setResult(message, type, field = null) {
     this.resultElement.innerHTML = message;
     if (type === 'error' && message.length) {
-      this.resultElement.classList.remove('text-success');
-      this.resultElement.classList.add('text-danger');
-      if (field) {
-        this.element.querySelector(`#${field}`).classList.add('is-invalid');
-      }
+      this.setResultClasses('text-danger', 'text-success', field, false);
     } else if (type === 'success' || !message.length) {
-      this.resultElement.classList.add('text-success');
-      this.resultElement.classList.remove('text-danger');
-      if (field) {
-        this.element.querySelector(`#${field}`).classList.remove('is-invalid');
-      }
+      this.setResultClasses('text-success', 'text-danger', field, true);
     }
   }
 
