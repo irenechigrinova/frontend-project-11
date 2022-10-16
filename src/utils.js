@@ -7,7 +7,7 @@ export const toInputField = (str) => str.replace(/[A-Z]/g, (letter) => `-${lette
 
 export const parseRssData = (data, i18n) => {
   const domParser = new DOMParser();
-  const dom = domParser.parseFromString(data, 'application/xml');
+  const dom = domParser.parseFromString(data, 'text/xml');
 
   const parseError = dom.querySelector('parsererror');
   if (parseError) throw new Error(i18n.t('invalidRss'));
