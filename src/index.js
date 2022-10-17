@@ -26,11 +26,42 @@ i18n.init({
   const postsData = {};
   let formState = {};
 
+  const update = (url, data, feeds) => {
+    feedsData[url] = data;
+    data.items.forEach((item) => {
+      if (!postsData[item.link]) postsData[item.link] = { ...item, isRead: false };
+    });
+
+    const reversedFeeds = [...feeds].reverse();
+
+    renderPosts(reversedFeeds, feedsData, postsData, i18n);
+    renderFeeds(reversedFeeds, feedsData, i18n);
+  };
+
+  const updateFeed = (url, feeds) => {
+    setTimeout(() => {
+      getFeed(url, i18n)
+        .then((result) => {
+          const newItems = result.items.filter((item) => !postsData[item.link]);
+          update(url, { ...result, items: [...newItems, ...result.items] }, feeds);
+        })
+        .catch((err) => {
+          console.error(err);
+          updateFeed(url, feeds);
+        });
+    }, FEED_TIMEOUT);
+  };
+
+  function handleFeedLoad(url, data, feeds) {
+    update(url, data, feeds);
+    updateFeed(url, feeds);
+  }
+
   const watchedFeeds = onChange(feedUrls, (_, value) => {
     const addedUrl = value[value.length - 1];
     getFeed(addedUrl, i18n)
       .then((result) => {
-        handleFeedLoad(addedUrl, result);
+        handleFeedLoad(addedUrl, result, value);
         formState.success = i18n.t('success');
       })
       .catch((err) => {
@@ -40,34 +71,6 @@ i18n.init({
         formState.isFetching = false;
       });
   });
-
-  function handleFeedLoad(url, data) {
-    feedsData[url] = data;
-    data.items.forEach((item) => {
-      if (!postsData[item.link]) postsData[item.link] = { ...item, isRead: false };
-    });
-
-    const reversedFeeds = [...watchedFeeds].reverse();
-
-    renderPosts(reversedFeeds, feedsData, postsData, i18n);
-    renderFeeds(reversedFeeds, feedsData, i18n);
-
-    updateFeed(url);
-  }
-
-  function updateFeed(url) {
-    setTimeout(() => {
-      getFeed(url, i18n)
-        .then((result) => {
-          const newItems = result.items.filter((item) => !postsData[item.link]);
-          handleFeedLoad(url, { ...result, items: [...newItems, ...result.items] });
-        })
-        .catch((err) => {
-          console.error(err);
-          updateFeed(url);
-        });
-    }, FEED_TIMEOUT);
-  }
 
   const modal = document.getElementById('modal');
   modal.addEventListener('show.bs.modal', (event) => {

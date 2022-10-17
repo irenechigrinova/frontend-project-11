@@ -7,7 +7,7 @@ export default (feeds, data, i18n) => {
 
   feeds.forEach((feed) => {
     const feedInstance = new Feed(data[feed]);
-    const content = feedInstance.render();
-    ul.append(content);
+    const view = feedInstance.render();
+    ul.append(view);
   });
 };

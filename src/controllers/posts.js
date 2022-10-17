@@ -7,8 +7,8 @@ export default (feeds, feedData, postData, i18n) => {
   feeds.forEach((feed) => {
     feedData[feed].items.forEach((item) => {
       const post = new Post(postData[item.link], i18n.t('watch'));
-      const content = post.render();
-      ul.append(content);
+      const view = post.render();
+      ul.append(view);
     });
   });
 };
