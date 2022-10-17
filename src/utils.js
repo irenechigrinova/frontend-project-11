@@ -46,7 +46,7 @@ export const createBaseContent = (id, text) => {
 };
 
 export const parseRssResult = (data, i18n) => {
-  if (!!data.status.http_code && data.status.http_code !== 200) {
+  if (!data || (data && data.status && data.status.http_code && data.status.http_code !== 200)) {
     throw new Error(i18n.t('invalidRss'));
   }
 
