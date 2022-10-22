@@ -39,10 +39,10 @@ export default () => {
           .then((result) => {
             const index = feedsState.feeds.findIndex((item) => item.url === url);
             const { data } = feedsState.feeds[index];
-            const newItems =
-                result.items.filter((item) => !data.items.find(({ link }) => link === item.link));
-            feedsState.feeds[index].data.items =
-                [...newItems, ...feedsState.feeds[index].data.items];
+            const filterItem = (item) => !data.items.find(({ link }) => link === item.link);
+            const newItems = result.items.filter(filterItem());
+            const updatedItems = [...newItems, ...feedsState.feeds[index].data.items];
+            feedsState.feeds[index].data.items = updatedItems;
             updateFeedByTimeout(url);
           })
           .catch((err) => {
