@@ -27,9 +27,10 @@ export default () => {
     const formState = initForm(formElement, formResultElement);
     const feedsState = initFeeds(modal, i18n);
 
-    const validateUrl = (url) => {
-      const schema = yup.string().url().required().notOneOf(feedsState.feeds);
-      return schema.validate(url);
+    const validateUrl = (rssUrl) => {
+      const feeds = feedsState.feeds.map(({ url }) => url);
+      const schema = yup.string().url().required().notOneOf(feeds);
+      return schema.validate(rssUrl);
     };
 
     const updateFeedByTimeout = (url) => {
