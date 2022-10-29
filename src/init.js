@@ -4,14 +4,30 @@ import * as yup from 'yup';
 import yupLocale from './locales/yup';
 import ru from './locales/ru';
 
-import initForm from './views/form';
-import initFeeds from './views/feeds';
+import { getFeed, transformPosts } from './utils/helpers';
+import { FEED_TIMEOUT, STATUS_CODES } from './utils/consts';
 
-import { getFeed, FEED_TIMEOUT } from './utils';
+import observe from './observer';
 
 export default () => {
   const i18n = i18next.createInstance();
   yup.setLocale(yupLocale);
+
+  const initState = {
+    feeds: [],
+    posts: {},
+    form: {
+      error: null,
+      status: STATUS_CODES.focus,
+    },
+    clickedPostId: null,
+  };
+
+  const elements = {
+    form: document.getElementById('rss-form'),
+    result: document.getElementById('form-result'),
+    modal: document.getElementById('modal'),
+  };
 
   i18n.init({
     lng: 'ru',
@@ -20,15 +36,10 @@ export default () => {
       ru,
     },
   }).then(() => {
-    const formElement = document.getElementById('rss-form');
-    const formResultElement = document.getElementById('form-result');
-    const modal = document.getElementById('modal');
-
-    const formState = initForm(formElement, formResultElement);
-    const feedsState = initFeeds(modal, i18n);
+    const state = observe(initState, elements, i18n);
 
     const validateUrl = (rssUrl) => {
-      const feeds = feedsState.feeds.map(({ url }) => url);
+      const feeds = state.feeds.map(({ url }) => url);
       const schema = yup.string().url().required().notOneOf(feeds);
       return schema.validate(rssUrl);
     };
@@ -37,12 +48,18 @@ export default () => {
       setTimeout(() => {
         getFeed(url, i18n)
           .then((result) => {
-            const index = feedsState.feeds.findIndex((item) => item.url === url);
-            const { data } = feedsState.feeds[index];
-            const filterItem = (item) => !data.items.find(({ link }) => link === item.link);
-            const newItems = result.items.filter(filterItem());
-            const updatedItems = [...newItems, ...feedsState.feeds[index].data.items];
-            feedsState.feeds[index].data.items = updatedItems;
+            const newPosts = result.items.filter(({ link }) => !state.posts[link]);
+            const { posts: newPostsData, postIds } = transformPosts(newPosts);
+            state.feeds = state.feeds.map((feed) => {
+              if (feed.url === url) {
+                return { ...feed, postIds: [...postIds, ...feed.postIds] };
+              }
+              return feed;
+            });
+            state.posts = {
+              ...state.posts,
+              ...newPostsData,
+            };
             updateFeedByTimeout(url);
           })
           .catch((err) => {
@@ -52,47 +69,63 @@ export default () => {
       }, FEED_TIMEOUT);
     };
 
-    function handleFeedLoad(url, data) {
-      feedsState.feeds.push({ url, data });
+    const handleFeedLoad = (url, data) => {
+      const { posts, postIds } = transformPosts(data.items);
+      state.feeds.push({
+        url, title: data.title, desc: data.desc, postIds,
+      });
+      state.posts = { ...state.posts, ...posts };
 
       updateFeedByTimeout(url);
-    }
+    };
 
-    const handleAddUrl = (url) => {
+    const loadFeed = (url) => {
       getFeed(url, i18n)
         .then((result) => {
-          handleFeedLoad(url, result);
-          formState.success = i18n.t('success');
-        })
-        .catch((err) => {
-          formState.rssUrlError = err;
-        })
-        .finally(() => {
-          formState.isFetching = false;
+          state.form = {
+            ...state.form,
+            error: result.error ? result.message : null,
+            status: result.error ? STATUS_CODES.failed : STATUS_CODES.success,
+          };
+          if (!result.error) {
+            handleFeedLoad(url, result);
+          }
         });
     };
 
     const handleFormSubmit = (e) => {
       e.preventDefault();
-      formState.isFetching = true;
-      formState.rssUrlError = '';
-      formState.success = '';
+
+      state.form = {
+        ...state.form,
+        status: STATUS_CODES.fetching,
+        error: null,
+      };
 
       const data = new FormData(e.target);
       const url = data.get('rss-url');
       validateUrl(url)
-        .then(() => handleAddUrl(url))
+        .then(() => {
+          state.form = {
+            ...state.form,
+            error: null,
+          };
+          loadFeed(url);
+        })
         .catch((err) => {
-          formState.rssUrlError = i18n.t(err.errors[0].key);
-          formState.isFetching = false;
+          state.form = {
+            ...state.form,
+            error: err.errors[0].key,
+            status: STATUS_CODES.failed,
+          };
         });
     };
 
     const handleModalOpen = (event) => {
-      feedsState.postClicked = event.relatedTarget;
+      state.clickedPostId = event.relatedTarget.getAttribute('data-bs-item');
     };
 
-    formElement.addEventListener('submit', handleFormSubmit);
-    modal.addEventListener('show.bs.modal', handleModalOpen);
+    elements.form.addEventListener('submit', handleFormSubmit);
+    elements.modal.addEventListener('show.bs.modal', handleModalOpen);
   });
 };
