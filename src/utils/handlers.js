@@ -2,15 +2,12 @@ import { STATUS_CODES } from './consts';
 import { createBaseContent, createElement } from './helpers';
 
 export const handleChangeForm = (elements, state, i18n) => {
-  const input = elements.form.querySelector('input');
-  const button = elements.form.querySelector('button');
-
   const setResultClasses = (addClass, removeClass, fieldIsValid) => {
     elements.result.classList.remove(removeClass);
     elements.result.classList.add(addClass);
 
     const method = fieldIsValid ? 'remove' : 'add';
-    input.classList[method]('is-invalid');
+    elements.input.classList[method]('is-invalid');
   };
 
   const resetForm = () => {
@@ -22,7 +19,7 @@ export const handleChangeForm = (elements, state, i18n) => {
     elements.result.innerHTML = i18n.t(state.error);
   }
 
-  button.removeAttribute('disabled');
+  elements.button.removeAttribute('disabled');
 
   switch (state.status) {
     case STATUS_CODES.failed:
@@ -37,7 +34,7 @@ export const handleChangeForm = (elements, state, i18n) => {
       resetForm();
       break;
     case STATUS_CODES.fetching:
-      button.setAttribute('disabled', 'true');
+      elements.button.setAttribute('disabled', 'true');
       break;
     default:
       break;
@@ -71,7 +68,11 @@ export const handleFeeds = (elements, feeds, i18n) => {
   });
 };
 
-export const handlePosts = (elements, data, i18n) => {
+export const handlePosts = (posts, i18n) => {
+  if (!posts.length) {
+    return;
+  }
+
   const createLink = (post) => createElement('a', [
     { name: 'href', value: post.link },
     { name: 'class', value: post.isRead ? 'fw-normal' : 'fw-bold' },
@@ -103,17 +104,13 @@ export const handlePosts = (elements, data, i18n) => {
 
   const ul = createBaseContent('posts', i18n.t('posts'));
 
-  [...data.feeds].reverse().forEach(({ postIds }) => {
-    postIds.forEach((id) => {
-      ul.append(renderPost(data.posts[id]));
-    });
+  posts.forEach((post) => {
+    ul.append(renderPost(post));
   });
 };
 
 export const handleModal = (itemId, posts, modal, i18n) => {
-  posts[itemId].isRead = true;
-
-  const { title, desc } = posts[itemId];
+  const { title, desc } = posts.find((post) => post.link === itemId);
   const modalTitle = modal.querySelector('.modal-title');
   const modalDesc = modal.querySelector('.modal-body');
   const read = modal.querySelector('.modal-footer a');

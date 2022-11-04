@@ -43,9 +43,3 @@ export const createElement = (el, attributes, text = null) => {
   if (text) element.textContent = text;
   return element;
 };
-
-export const transformPosts = (posts) => posts.reduce((result, item) => ({
-  ...result,
-  posts: { ...result.posts, [item.link]: item },
-  postIds: [...result.postIds, item.link],
-}), { posts: {}, postIds: [] });

@@ -13,7 +13,7 @@ export default (initState, elements, i18n) => onChange(initState, (path, value) 
       handleFeeds(elements, value, i18n);
       break;
     case 'posts':
-      handlePosts(elements, { posts: value, feeds: initState.feeds }, i18n);
+      handlePosts(value, i18n);
       break;
     case 'clickedPostId':
       handleModal(value, initState.posts, elements.modal, i18n);

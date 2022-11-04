@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import yupLocale from './locales/yup';
 import ru from './locales/ru';
 
-import { getFeed, transformPosts } from './utils/helpers';
+import { getFeed } from './utils/helpers';
 import { FEED_TIMEOUT, STATUS_CODES } from './utils/consts';
 
 import observe from './observer';
@@ -15,7 +15,7 @@ export default () => {
 
   const initState = {
     feeds: [],
-    posts: {},
+    posts: [],
     form: {
       error: null,
       status: STATUS_CODES.focus,
@@ -27,6 +27,8 @@ export default () => {
     form: document.getElementById('rss-form'),
     result: document.getElementById('form-result'),
     modal: document.getElementById('modal'),
+    input: document.getElementById('rss-form').querySelector('input'),
+    button: document.getElementById('rss-form').querySelector('button'),
   };
 
   i18n.init({
@@ -44,39 +46,34 @@ export default () => {
       return schema.validate(rssUrl);
     };
 
-    const updateFeedByTimeout = (url) => {
+    const updateFeedsByTimeout = () => {
       setTimeout(() => {
-        getFeed(url, i18n)
-          .then((result) => {
-            const newPosts = result.items.filter(({ link }) => !state.posts[link]);
-            const { posts: newPostsData, postIds } = transformPosts(newPosts);
-            state.feeds = state.feeds.map((feed) => {
-              if (feed.url === url) {
-                return { ...feed, postIds: [...postIds, ...feed.postIds] };
+        const promises = [...state.feeds].reverse().map((feed) => getFeed(feed.url, i18n));
+        Promise.allSettled(promises)
+          .then((results) => {
+            const posts = [];
+            results.forEach((result) => {
+              if (result.status === 'fulfilled') {
+                result.value.items.forEach((item) => {
+                  const postExists = state.posts.find((post) => post.link === item.link);
+                  if (!postExists) {
+                    posts.push({ ...item, isRead: false, feedId: result.value.url });
+                  }
+                });
               }
-              return feed;
             });
-            state.posts = {
-              ...state.posts,
-              ...newPostsData,
-            };
-            updateFeedByTimeout(url);
-          })
-          .catch((err) => {
-            console.error(err);
-            updateFeedByTimeout(url);
+            state.posts = [...posts, ...state.posts];
+            updateFeedsByTimeout();
           });
       }, FEED_TIMEOUT);
     };
 
     const handleFeedLoad = (url, data) => {
-      const { posts, postIds } = transformPosts(data.items);
+      const posts = data.items.map((post) => ({ ...post, feedId: url, isRead: false }));
       state.feeds.push({
-        url, title: data.title, desc: data.desc, postIds,
+        url, title: data.title, desc: data.desc,
       });
-      state.posts = { ...state.posts, ...posts };
-
-      updateFeedByTimeout(url);
+      state.posts = [...posts, ...state.posts];
     };
 
     const loadFeed = (url) => {
@@ -122,10 +119,19 @@ export default () => {
     };
 
     const handleModalOpen = (event) => {
-      state.clickedPostId = event.relatedTarget.getAttribute('data-bs-item');
+      const id = event.relatedTarget.getAttribute('data-bs-item');
+      state.clickedPostId = id;
+      state.posts = state.posts.map((post) => {
+        if (post.link === id) {
+          return { ...post, isRead: true };
+        }
+        return post;
+      });
     };
 
     elements.form.addEventListener('submit', handleFormSubmit);
     elements.modal.addEventListener('show.bs.modal', handleModalOpen);
+
+    updateFeedsByTimeout();
   });
 };
